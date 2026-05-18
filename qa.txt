@@ -1,0 +1,6 @@
+cd /Users/AbigailBolinao1/Desktop/RackTangle/Staging/RackTangle
+
+flutter clean
+flutter pub get
+
+patrol test --target=test/racktangle_test.dart
