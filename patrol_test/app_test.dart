@@ -12,6 +12,17 @@ import 'package:racktangle/Levels/Level8.dart';
 import 'package:racktangle/Levels/Level9.dart';
 import 'package:racktangle/Levels/Level10.dart';
 
+// ---------------------------------------------------------------------------
+// HELPER — use this instead of pumpAndSettle() after any navigation or screen
+// that has a looping animation (BGM visualizer, level canvas, etc.).
+// It pumps frames for a fixed duration so we never time out waiting for an
+// animation that runs forever.
+// ---------------------------------------------------------------------------
+Future<void> _settle(PatrolIntegrationTester $, [int seconds = 5]) async {
+  await $.tester.pump(Duration(seconds: seconds));
+  await $.tester.pump(Duration(seconds: seconds));
+}
+
 void main() {
   // ═══════════════════════════════════════════════════
   // HOME SCREEN
@@ -21,7 +32,7 @@ void main() {
     'Home screen shows Play, How to Play, and Settings buttons',
     ($) async {
       app.main();
-      await $.pumpAndSettle();
+      await _settle($, 6); // wait for splash/intro animation
 
       expect(find.text('Play'), findsOneWidget);
       expect(find.text('How to Play'), findsOneWidget);
@@ -33,10 +44,10 @@ void main() {
     'Play button navigates to Level 1',
     ($) async {
       app.main();
-      await $.pumpAndSettle();
+      await _settle($, 6);
 
       await $.tap(find.text('Play'));
-      await $.pumpAndSettle();
+      await _settle($, 6); // level canvas may have continuous animation
 
       expect(find.textContaining('Crossings'), findsOneWidget);
       expect(
@@ -50,10 +61,10 @@ void main() {
     'How to Play button navigates to HowToPlay screen',
     ($) async {
       app.main();
-      await $.pumpAndSettle();
+      await _settle($, 6);
 
       await $.tap(find.text('How to Play'));
-      await $.pumpAndSettle();
+      await _settle($, 6); // HowToPlay may have looping animation
 
       expect(find.byIcon(Icons.arrow_back_ios_new_rounded), findsWidgets);
     },
@@ -63,13 +74,13 @@ void main() {
     'How to Play back button returns to Home',
     ($) async {
       app.main();
-      await $.pumpAndSettle();
+      await _settle($, 6);
 
       await $.tap(find.text('How to Play'));
-      await $.pumpAndSettle();
+      await _settle($, 6);
 
       await $.tap(find.byIcon(Icons.arrow_back_ios_new_rounded));
-      await $.pumpAndSettle();
+      await _settle($, 6);
 
       expect(find.text('Play'), findsOneWidget);
     },
@@ -79,10 +90,10 @@ void main() {
     'Settings button navigates to Settings screen',
     ($) async {
       app.main();
-      await $.pumpAndSettle();
+      await _settle($, 6);
 
       await $.tap(find.text('Settings'));
-      await $.pumpAndSettle();
+      await _settle($, 6);
 
       expect(find.text('SOUNDS'), findsOneWidget);
       expect(find.text('Background Music'), findsOneWidget);
@@ -98,10 +109,10 @@ void main() {
     'Settings screen shows all three sections',
     ($) async {
       app.main();
-      await $.pumpAndSettle();
+      await _settle($, 6);
 
       await $.tap(find.text('Settings'));
-      await $.pumpAndSettle();
+      await _settle($, 6);
 
       expect(find.text('SOUNDS'), findsOneWidget);
       expect(find.text('PROGRESS'), findsOneWidget);
@@ -113,16 +124,16 @@ void main() {
     'Settings Background Music toggle changes state',
     ($) async {
       app.main();
-      await $.pumpAndSettle();
+      await _settle($, 6);
 
       await $.tap(find.text('Settings'));
-      await $.pumpAndSettle();
+      await _settle($, 6);
 
       final toggle = find.byType(Switch).at(0);
       final before = $.tester.widget<Switch>(toggle).value;
 
       await $.tester.tap(toggle);
-      await $.pumpAndSettle();
+      await $.tester.pump(const Duration(milliseconds: 500));
 
       expect($.tester.widget<Switch>(toggle).value, isNot(before));
     },
@@ -132,16 +143,16 @@ void main() {
     'Settings Sound Effects toggle changes state',
     ($) async {
       app.main();
-      await $.pumpAndSettle();
+      await _settle($, 6);
 
       await $.tap(find.text('Settings'));
-      await $.pumpAndSettle();
+      await _settle($, 6);
 
       final toggle = find.byType(Switch).at(1);
       final before = $.tester.widget<Switch>(toggle).value;
 
       await $.tester.tap(toggle);
-      await $.pumpAndSettle();
+      await $.tester.pump(const Duration(milliseconds: 500));
 
       expect($.tester.widget<Switch>(toggle).value, isNot(before));
     },
@@ -151,10 +162,10 @@ void main() {
     'Settings shows Current Level and Modules Completed cards',
     ($) async {
       app.main();
-      await $.pumpAndSettle();
+      await _settle($, 6);
 
       await $.tap(find.text('Settings'));
-      await $.pumpAndSettle();
+      await _settle($, 6);
 
       expect(find.text('Current Level'), findsOneWidget);
       expect(find.text('Modules Completed'), findsOneWidget);
@@ -165,17 +176,17 @@ void main() {
     'Reset Progress resets level display to Level 1',
     ($) async {
       app.main();
-      await $.pumpAndSettle();
+      await _settle($, 6);
 
       await $.tap(find.text('Settings'));
-      await $.pumpAndSettle();
+      await _settle($, 6);
 
       await $.tester
           .drag(find.byType(SingleChildScrollView), const Offset(0, -300));
-      await $.pumpAndSettle();
+      await $.tester.pump(const Duration(milliseconds: 500));
 
       await $.tap(find.text('Reset Progress'));
-      await $.pumpAndSettle();
+      await $.tester.pump(const Duration(milliseconds: 500));
 
       expect(find.textContaining('Level 1 of'), findsOneWidget);
     },
@@ -185,13 +196,13 @@ void main() {
     'Settings back button returns to Home screen',
     ($) async {
       app.main();
-      await $.pumpAndSettle();
+      await _settle($, 6);
 
       await $.tap(find.text('Settings'));
-      await $.pumpAndSettle();
+      await _settle($, 6);
 
       await $.tap(find.byIcon(Icons.arrow_back_ios_new_rounded));
-      await $.pumpAndSettle();
+      await _settle($, 6);
 
       expect(find.text('Play'), findsOneWidget);
     },
@@ -205,10 +216,10 @@ void main() {
     'Level 1 shows timer at 00:00, crossings counter, and pause button',
     ($) async {
       app.main();
-      await $.pumpAndSettle();
+      await _settle($, 6);
 
       await $.tap(find.text('Play'));
-      await $.pumpAndSettle();
+      await _settle($, 6);
 
       expect(find.text('00:00'), findsOneWidget);
       expect(find.textContaining('Crossings'), findsOneWidget);
@@ -220,13 +231,14 @@ void main() {
     'Level 1 timer increments after a few seconds',
     ($) async {
       app.main();
-      await $.pumpAndSettle();
+      await _settle($, 6);
 
       await $.tap(find.text('Play'));
-      await $.pumpAndSettle();
+      await _settle($, 6);
 
+      // Let real time pass then pump frames so the timer widget rebuilds
       await Future<void>.delayed(const Duration(seconds: 3));
-      await $.pumpAndSettle();
+      await $.tester.pump(const Duration(seconds: 1));
 
       expect(find.text('00:00'), findsNothing);
     },
@@ -236,13 +248,13 @@ void main() {
     'Level 1 pause dialog shows correct content',
     ($) async {
       app.main();
-      await $.pumpAndSettle();
+      await _settle($, 6);
 
       await $.tap(find.text('Play'));
-      await $.pumpAndSettle();
+      await _settle($, 6);
 
       await $.tap(find.byIcon(Icons.pause));
-      await $.pumpAndSettle();
+      await $.tester.pump(const Duration(milliseconds: 500));
 
       expect(find.text('LEVEL 1'), findsOneWidget);
       expect(find.text('Paused'), findsOneWidget);
@@ -258,16 +270,16 @@ void main() {
     'Level 1 pause dialog - Resume closes dialog',
     ($) async {
       app.main();
-      await $.pumpAndSettle();
+      await _settle($, 6);
 
       await $.tap(find.text('Play'));
-      await $.pumpAndSettle();
+      await _settle($, 6);
 
       await $.tap(find.byIcon(Icons.pause));
-      await $.pumpAndSettle();
+      await $.tester.pump(const Duration(milliseconds: 500));
 
       await $.tap(find.text('Resume'));
-      await $.pumpAndSettle();
+      await $.tester.pump(const Duration(milliseconds: 500));
 
       expect(find.text('Paused'), findsNothing);
       expect(find.textContaining('Crossings'), findsOneWidget);
@@ -278,19 +290,19 @@ void main() {
     'Level 1 pause dialog - Restart Level resets timer to 00:00',
     ($) async {
       app.main();
-      await $.pumpAndSettle();
+      await _settle($, 6);
 
       await $.tap(find.text('Play'));
-      await $.pumpAndSettle();
+      await _settle($, 6);
 
       await Future<void>.delayed(const Duration(seconds: 2));
-      await $.pumpAndSettle();
+      await $.tester.pump(const Duration(seconds: 1));
 
       await $.tap(find.byIcon(Icons.pause));
-      await $.pumpAndSettle();
+      await $.tester.pump(const Duration(milliseconds: 500));
 
       await $.tap(find.text('Restart Level'));
-      await $.pumpAndSettle();
+      await $.tester.pump(const Duration(milliseconds: 500));
 
       expect(find.text('00:00'), findsOneWidget);
     },
@@ -300,16 +312,16 @@ void main() {
     'Level 1 pause dialog - Back to home returns to HomeScreen',
     ($) async {
       app.main();
-      await $.pumpAndSettle();
+      await _settle($, 6);
 
       await $.tap(find.text('Play'));
-      await $.pumpAndSettle();
+      await _settle($, 6);
 
       await $.tap(find.byIcon(Icons.pause));
-      await $.pumpAndSettle();
+      await $.tester.pump(const Duration(milliseconds: 500));
 
       await $.tap(find.text('Back to home'));
-      await $.pumpAndSettle();
+      await _settle($, 6);
 
       expect(find.text('Play'), findsOneWidget);
     },
@@ -319,16 +331,16 @@ void main() {
     'Level 1 pause dialog cannot be dismissed by tapping outside',
     ($) async {
       app.main();
-      await $.pumpAndSettle();
+      await _settle($, 6);
 
       await $.tap(find.text('Play'));
-      await $.pumpAndSettle();
+      await _settle($, 6);
 
       await $.tap(find.byIcon(Icons.pause));
-      await $.pumpAndSettle();
+      await $.tester.pump(const Duration(milliseconds: 500));
 
       await $.tester.tapAt(const Offset(10, 10));
-      await $.pumpAndSettle();
+      await $.tester.pump(const Duration(milliseconds: 500));
 
       expect(find.text('Paused'), findsOneWidget);
     },
@@ -344,6 +356,7 @@ void main() {
       await $.pumpWidgetAndSettle(
         const MaterialApp(home: Level2Screen()),
       );
+      await _settle($, 6);
 
       expect(find.text('LEARNING MODULE'), findsOneWidget);
       expect(find.textContaining('Ready to Play'), findsOneWidget);
@@ -356,9 +369,10 @@ void main() {
       await $.pumpWidgetAndSettle(
         const MaterialApp(home: Level2Screen()),
       );
+      await _settle($, 6);
 
       await Future<void>.delayed(const Duration(seconds: 2));
-      await $.pumpAndSettle();
+      await $.tester.pump(const Duration(seconds: 1));
 
       expect(find.text('00:00'), findsOneWidget);
     },
@@ -370,9 +384,10 @@ void main() {
       await $.pumpWidgetAndSettle(
         const MaterialApp(home: Level2Screen()),
       );
+      await _settle($, 6);
 
       await $.tap(find.textContaining('Ready to Play'));
-      await $.pumpAndSettle();
+      await _settle($, 6);
 
       expect(find.text('LEARNING MODULE'), findsNothing);
       expect(find.textContaining('Crossings'), findsOneWidget);
@@ -385,12 +400,13 @@ void main() {
       await $.pumpWidgetAndSettle(
         const MaterialApp(home: Level2Screen()),
       );
+      await _settle($, 6);
 
       await $.tap(find.textContaining('Ready to Play'));
-      await $.pumpAndSettle();
+      await _settle($, 6);
 
       await Future<void>.delayed(const Duration(seconds: 3));
-      await $.pumpAndSettle();
+      await $.tester.pump(const Duration(seconds: 1));
 
       expect(find.text('00:00'), findsNothing);
     },
@@ -402,12 +418,13 @@ void main() {
       await $.pumpWidgetAndSettle(
         const MaterialApp(home: Level2Screen()),
       );
+      await _settle($, 6);
 
       await $.tap(find.textContaining('Ready to Play'));
-      await $.pumpAndSettle();
+      await _settle($, 6);
 
       await $.tap(find.byIcon(Icons.pause));
-      await $.pumpAndSettle();
+      await $.tester.pump(const Duration(milliseconds: 500));
 
       expect(find.text('LEVEL 2'), findsOneWidget);
       expect(find.text('Paused'), findsOneWidget);
@@ -424,6 +441,7 @@ void main() {
       await $.pumpWidgetAndSettle(
         const MaterialApp(home: Level3Screen()),
       );
+      await _settle($, 6);
 
       expect(find.textContaining('Crossings'), findsOneWidget);
       expect(find.byIcon(Icons.pause), findsOneWidget);
@@ -436,9 +454,10 @@ void main() {
       await $.pumpWidgetAndSettle(
         const MaterialApp(home: Level3Screen()),
       );
+      await _settle($, 6);
 
       await $.tap(find.byIcon(Icons.pause));
-      await $.pumpAndSettle();
+      await $.tester.pump(const Duration(milliseconds: 500));
 
       expect(find.text('LEVEL 3'), findsOneWidget);
       expect(find.text('Paused'), findsOneWidget);
@@ -455,6 +474,7 @@ void main() {
       await $.pumpWidgetAndSettle(
         const MaterialApp(home: Level4Screen()),
       );
+      await _settle($, 6);
 
       expect(find.text('LEARNING MODULE'), findsOneWidget);
       expect(find.text('NETWORK HUB'), findsOneWidget);
@@ -467,12 +487,13 @@ void main() {
       await $.pumpWidgetAndSettle(
         const MaterialApp(home: Level4Screen()),
       );
+      await _settle($, 6);
 
       await $.tap(find.textContaining('Ready to Play'));
-      await $.pumpAndSettle();
+      await _settle($, 6);
 
       await $.tap(find.byIcon(Icons.pause));
-      await $.pumpAndSettle();
+      await $.tester.pump(const Duration(milliseconds: 500));
 
       expect(find.text('LEVEL 4'), findsOneWidget);
       expect(find.text('Paused'), findsOneWidget);
@@ -480,7 +501,7 @@ void main() {
   );
 
   // ═══════════════════════════════════════════════════
-  // LEVELS 5-7 — check learning card then pause dialog
+  // LEVELS 5–7
   // ═══════════════════════════════════════════════════
 
   patrolTest(
@@ -489,14 +510,15 @@ void main() {
       await $.pumpWidgetAndSettle(
         const MaterialApp(home: Level5Screen()),
       );
+      await _settle($, 6);
 
       if (find.textContaining('Ready to Play').evaluate().isNotEmpty) {
         await $.tap(find.textContaining('Ready to Play'));
-        await $.pumpAndSettle();
+        await _settle($, 6);
       }
 
       await $.tap(find.byIcon(Icons.pause));
-      await $.pumpAndSettle();
+      await $.tester.pump(const Duration(milliseconds: 500));
 
       expect(find.text('LEVEL 5'), findsOneWidget);
       expect(find.text('Paused'), findsOneWidget);
@@ -509,14 +531,15 @@ void main() {
       await $.pumpWidgetAndSettle(
         const MaterialApp(home: Level6Screen()),
       );
+      await _settle($, 6);
 
       if (find.textContaining('Ready to Play').evaluate().isNotEmpty) {
         await $.tap(find.textContaining('Ready to Play'));
-        await $.pumpAndSettle();
+        await _settle($, 6);
       }
 
       await $.tap(find.byIcon(Icons.pause));
-      await $.pumpAndSettle();
+      await $.tester.pump(const Duration(milliseconds: 500));
 
       expect(find.text('LEVEL 6'), findsOneWidget);
       expect(find.text('Paused'), findsOneWidget);
@@ -529,14 +552,15 @@ void main() {
       await $.pumpWidgetAndSettle(
         const MaterialApp(home: Level7Screen()),
       );
+      await _settle($, 6);
 
       if (find.textContaining('Ready to Play').evaluate().isNotEmpty) {
         await $.tap(find.textContaining('Ready to Play'));
-        await $.pumpAndSettle();
+        await _settle($, 6);
       }
 
       await $.tap(find.byIcon(Icons.pause));
-      await $.pumpAndSettle();
+      await $.tester.pump(const Duration(milliseconds: 500));
 
       expect(find.text('LEVEL 7'), findsOneWidget);
       expect(find.text('Paused'), findsOneWidget);
@@ -544,7 +568,7 @@ void main() {
   );
 
   // ═══════════════════════════════════════════════════
-  // LEVEL 8 — has learning card (Server / Redundancy)
+  // LEVEL 8 — has learning card (Reliability & Redundancy)
   // ═══════════════════════════════════════════════════
 
   patrolTest(
@@ -553,6 +577,7 @@ void main() {
       await $.pumpWidgetAndSettle(
         const MaterialApp(home: Level8Screen()),
       );
+      await _settle($, 6);
 
       expect(find.text('LEARNING MODULE'), findsOneWidget);
       expect(find.text('Reliability & Redundancy'), findsOneWidget);
@@ -565,12 +590,13 @@ void main() {
       await $.pumpWidgetAndSettle(
         const MaterialApp(home: Level8Screen()),
       );
+      await _settle($, 6);
 
       await $.tap(find.textContaining('Ready to Play'));
-      await $.pumpAndSettle();
+      await _settle($, 6);
 
       await $.tap(find.byIcon(Icons.pause));
-      await $.pumpAndSettle();
+      await $.tester.pump(const Duration(milliseconds: 500));
 
       expect(find.text('LEVEL 8'), findsOneWidget);
       expect(find.text('Paused'), findsOneWidget);
@@ -578,7 +604,7 @@ void main() {
   );
 
   // ═══════════════════════════════════════════════════
-  // LEVEL 9 — has learning card (Dual ISP)
+  // LEVEL 9 — has learning card (ISP Redundancy)
   // ═══════════════════════════════════════════════════
 
   patrolTest(
@@ -587,6 +613,7 @@ void main() {
       await $.pumpWidgetAndSettle(
         const MaterialApp(home: Level9Screen()),
       );
+      await _settle($, 6);
 
       expect(find.text('LEARNING MODULE'), findsOneWidget);
       expect(find.text('ISP Redundancy'), findsOneWidget);
@@ -599,12 +626,13 @@ void main() {
       await $.pumpWidgetAndSettle(
         const MaterialApp(home: Level9Screen()),
       );
+      await _settle($, 6);
 
       await $.tap(find.textContaining('Ready to Play'));
-      await $.pumpAndSettle();
+      await _settle($, 6);
 
       await $.tap(find.byIcon(Icons.pause));
-      await $.pumpAndSettle();
+      await $.tester.pump(const Duration(milliseconds: 500));
 
       expect(find.text('LEVEL 9'), findsOneWidget);
       expect(find.text('Paused'), findsOneWidget);
@@ -621,10 +649,11 @@ void main() {
       await $.pumpWidgetAndSettle(
         const MaterialApp(home: Level10Screen()),
       );
+      await _settle($, 6);
 
       if (find.textContaining('Ready to Play').evaluate().isNotEmpty) {
         await $.tap(find.textContaining('Ready to Play'));
-        await $.pumpAndSettle();
+        await _settle($, 6);
       }
 
       expect(find.byIcon(Icons.pause), findsOneWidget);
@@ -637,14 +666,15 @@ void main() {
       await $.pumpWidgetAndSettle(
         const MaterialApp(home: Level10Screen()),
       );
+      await _settle($, 6);
 
       if (find.textContaining('Ready to Play').evaluate().isNotEmpty) {
         await $.tap(find.textContaining('Ready to Play'));
-        await $.pumpAndSettle();
+        await _settle($, 6);
       }
 
       await $.tap(find.byIcon(Icons.pause));
-      await $.pumpAndSettle();
+      await $.tester.pump(const Duration(milliseconds: 500));
 
       expect(find.text('LEVEL 10'), findsOneWidget);
       expect(find.text('Paused'), findsOneWidget);

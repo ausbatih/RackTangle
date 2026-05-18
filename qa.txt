@@ -3,4 +3,15 @@ cd /Users/AbigailBolinao1/Desktop/RackTangle/Staging/RackTangle
 flutter clean
 flutter pub get
 
-patrol test --target=test/racktangle_test.dart
+flutter run
+
+patrol test 
+
+git pull origin staging-abi   # get latest changes
+flutter pub get               # update dependencies
+patrol doctor                 # check patrol setup is still valid
+patrol test                   # now run tests
+
+git pull origin james-branch --no-rebase
+
+git reset --hard ORIG_HEAD
