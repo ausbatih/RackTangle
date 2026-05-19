@@ -104,6 +104,7 @@ class BgmService {
     }
   }
 
+<<<<<<< HEAD
   Future<void> setBgm(String filename) async {
     if (!_isInitialized) {
       await initialize();
@@ -127,6 +128,8 @@ class BgmService {
     print('BGM switched to: $filename');
   }
 
+=======
+>>>>>>> 14caf98 (Add progress service and updated assets)
   Future<void> stopBgm() async {
     try {
       await _bgmPlayer.stop();
