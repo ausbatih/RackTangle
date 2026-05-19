@@ -1,5 +1,8 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:audioplayers/audioplayers.dart';
+import 'package:racktangle/services/bgm_service.dart';
+import 'package:racktangle/services/progress_service.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -10,6 +13,8 @@ class SettingsScreen extends StatefulWidget {
 
 class _SettingsScreenState extends State<SettingsScreen> {
   final AudioPlayer _sfxPlayer = AudioPlayer();
+  final BgmService _bgmService = BgmService();
+  final ProgressService _progressService = ProgressService();
 
   bool _backgroundMusicEnabled = true;
   bool _soundEffectsEnabled = true;
@@ -28,6 +33,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
   static const Color _dangerColor = Color(0xFFB00020);
 
   @override
+  void initState() {
+    super.initState();
+    _backgroundMusicEnabled = _bgmService.bgmEnabled;
+    unawaited(_loadProgress());
+    unawaited(
+      BgmService().setBgm('bgm_menu.mp3'),
+    );
+  }
+
+  @override
   void dispose() {
     _sfxPlayer.dispose();
     super.dispose();
@@ -37,12 +52,28 @@ class _SettingsScreenState extends State<SettingsScreen> {
     await _sfxPlayer.play(AssetSource('sfx/sfx_button.ogg'));
   }
 
+  Future<void> _loadProgress() async {
+    final unlockedLevel = await _progressService.getUnlockedLevel();
+    if (!mounted) {
+      return;
+    }
+    setState(() {
+      _currentLevel = unlockedLevel;
+    });
+  }
+
   double get _levelProgress => _currentLevel / _maxLevel;
 
-  void _toggleBackgroundMusic(bool value) {
+  Future<void> _toggleBackgroundMusic(bool value) async {
     setState(() {
       _backgroundMusicEnabled = value;
     });
+
+    await _bgmService.setBgmEnabled(value);
+
+    if (value) {
+      await _bgmService.playBgm('bgm_menu.mp3');
+    }
   }
 
   void _toggleSoundEffects(bool value) {
@@ -51,11 +82,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
     });
   }
 
-  void _resetProgress() {
+  Future<void> _resetProgress() async {
     setState(() {
       _currentLevel = 1;
       _completedModules = 0;
     });
+    await _progressService.resetProgress();
   }
 
   @override
@@ -103,7 +135,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               _ToggleSettingCard(
                 label: 'Background Music',
                 value: _backgroundMusicEnabled,
-                onChanged: _toggleBackgroundMusic,
+                onChanged: (value) => _toggleBackgroundMusic(value),
                 accentColor: _accentColor,
                 panelColor: _panelColor,
                 panelBorderColor: _panelBorderColor,
@@ -153,7 +185,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 textColor: _textColor,
                 onTap: () async {
                   await _playButtonSfx();
-                  _resetProgress();
+                  await _resetProgress();
                 },
               ),
             ],

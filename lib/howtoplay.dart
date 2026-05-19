@@ -1,5 +1,8 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:audioplayers/audioplayers.dart';
+import 'package:racktangle/services/bgm_service.dart';
 
 class HowToPlayScreen extends StatefulWidget {
   const HowToPlayScreen({super.key});
@@ -10,6 +13,14 @@ class HowToPlayScreen extends StatefulWidget {
 
 class _HowToPlayScreenState extends State<HowToPlayScreen> {
   final AudioPlayer _sfxPlayer = AudioPlayer();
+
+  @override
+  void initState() {
+    super.initState();
+    unawaited(
+      BgmService().setBgm('bgm_menu.mp3'),
+    );
+  }
 
   @override
   void dispose() {
@@ -24,9 +35,7 @@ class _HowToPlayScreenState extends State<HowToPlayScreen> {
   static const Color _backgroundColor = Color(0xFF171725);
   static const Color _panelColor = Color(0xFF222238);
   static const Color _panelBorderColor = Color(0xFF5B5B7A);
-  static const Color _accentColor = Color(0xFF7D7DB2);
   static const Color _textColor = Color(0xFFF4F4FA);
-  static const Color _subtleTextColor = Color(0xFFB9B9D3);
   static const Color _ruleColor = Color(0xFF6B6B8E);
 
   @override

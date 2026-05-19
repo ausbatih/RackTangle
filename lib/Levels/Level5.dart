@@ -4,6 +4,8 @@ import 'dart:math' as math;
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:racktangle/Levels/Level6.dart';
+import 'package:racktangle/services/bgm_service.dart';
+import 'package:racktangle/services/progress_service.dart';
 
 class Level5Screen extends StatefulWidget {
   const Level5Screen({super.key});
@@ -47,6 +49,8 @@ class _Level5ScreenState extends State<Level5Screen> {
 
   final GlobalKey _stackKey = GlobalKey();
   final AudioPlayer _sfxPlayer = AudioPlayer();
+  final BgmService _bgmService = BgmService();
+  final ProgressService _progressService = ProgressService();
 
   // 0-1: router -> switch, draggable on router
   List<int> _upperRouterPortByWire = [0, 1];
@@ -75,6 +79,9 @@ class _Level5ScreenState extends State<Level5Screen> {
   void initState() {
     super.initState();
     _isPaused = true;
+    unawaited(
+      BgmService().setBgm('bgm_gameplay.mp3'),
+    );
   }
 
   @override
@@ -283,6 +290,7 @@ class _Level5ScreenState extends State<Level5Screen> {
                   child: OutlinedButton(
                     onPressed: () {
                       unawaited(_playSfx('sfx_button.ogg'));
+                      unawaited(_bgmService.setBgm('bgm_menu.mp3'));
                       Navigator.of(dialogContext).pop();
                       Navigator.of(context).popUntil((route) => route.isFirst);
                     },
@@ -382,8 +390,9 @@ class _Level5ScreenState extends State<Level5Screen> {
                 SizedBox(
                   width: double.infinity,
                   child: OutlinedButton(
-                    onPressed: () {
+                    onPressed: () async {
                       unawaited(_playSfx('sfx_button.ogg'));
+                      await _progressService.setUnlockedLevel(6);
                       Navigator.of(dialogContext).pop();
                       Navigator.of(context).pushReplacement(
                         MaterialPageRoute(
@@ -414,6 +423,7 @@ class _Level5ScreenState extends State<Level5Screen> {
                   child: OutlinedButton(
                     onPressed: () {
                       unawaited(_playSfx('sfx_button.ogg'));
+                      unawaited(_bgmService.setBgm('bgm_menu.mp3'));
                       Navigator.of(dialogContext).pop();
                       Navigator.of(context).popUntil((route) => route.isFirst);
                     },
@@ -667,6 +677,7 @@ class _Level5ScreenState extends State<Level5Screen> {
             child: OutlinedButton(
               onPressed: () {
                 unawaited(_playSfx('sfx_button.ogg'));
+                unawaited(_bgmService.setBgm('bgm_menu.mp3'));
                 Navigator.of(context).pop();
               },
               style: OutlinedButton.styleFrom(

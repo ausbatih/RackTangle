@@ -4,6 +4,8 @@ import 'dart:math' as math;
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:racktangle/Levels/Level8.dart';
+import 'package:racktangle/services/bgm_service.dart';
+import 'package:racktangle/services/progress_service.dart';
 
 class Level7Screen extends StatefulWidget {
   const Level7Screen({super.key});
@@ -42,6 +44,8 @@ class _Level7ScreenState extends State<Level7Screen> {
 
   final GlobalKey _stackKey = GlobalKey();
   final AudioPlayer _sfxPlayer = AudioPlayer();
+  final BgmService _bgmService = BgmService();
+  final ProgressService _progressService = ProgressService();
 
   // Five cables: left-side endpoint is draggable among left ports,
   // right-side endpoint is draggable among right ports.
@@ -64,6 +68,9 @@ class _Level7ScreenState extends State<Level7Screen> {
   void initState() {
     super.initState();
     _isPaused = true;
+    unawaited(
+      BgmService().setBgm('bgm_gameplay.mp3'),
+    );
   }
 
   @override
@@ -267,6 +274,7 @@ class _Level7ScreenState extends State<Level7Screen> {
                   child: OutlinedButton(
                     onPressed: () {
                       unawaited(_playSfx('sfx_button.ogg'));
+                      unawaited(_bgmService.setBgm('bgm_menu.mp3'));
                       Navigator.of(dialogContext).pop();
                       Navigator.of(context).pop();
                     },
@@ -392,8 +400,9 @@ class _Level7ScreenState extends State<Level7Screen> {
                 const SizedBox(height: 20),
                 _dialogButton(
                   text: 'Next Level',
-                  onPressed: () {
+                  onPressed: () async {
                     unawaited(_playSfx('sfx_button.ogg'));
+                    await _progressService.setUnlockedLevel(8);
                     Navigator.of(dialogContext).pop();
                     Navigator.of(context).pushReplacement(
                       MaterialPageRoute<void>(
@@ -407,6 +416,7 @@ class _Level7ScreenState extends State<Level7Screen> {
                   text: 'Back to home',
                   onPressed: () {
                     unawaited(_playSfx('sfx_button.ogg'));
+                    unawaited(_bgmService.setBgm('bgm_menu.mp3'));
                     Navigator.of(dialogContext).pop();
                     Navigator.of(context).popUntil((route) => route.isFirst);
                   },
@@ -587,6 +597,7 @@ class _Level7ScreenState extends State<Level7Screen> {
             child: OutlinedButton(
               onPressed: () {
                 unawaited(_playSfx('sfx_button.ogg'));
+                unawaited(_bgmService.setBgm('bgm_menu.mp3'));
                 Navigator.of(context).pop();
               },
               style: OutlinedButton.styleFrom(
